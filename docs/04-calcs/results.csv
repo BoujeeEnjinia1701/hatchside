@@ -1,0 +1,15 @@
+id,requirement,result,status
+R1,No entry for any task,"Every head fitted, worked and recovered from the rim",Met on paper
+R2,Fits openings 0.5 to 1.2 m,Feet on 3.0 m circle; guard inner face at 672 mm radius,Met on paper
+R3,Working depth 10 m,15 m rope; drum capacity to confirm,Met on paper
+R4,"SWL 150 kg, proof 1.5x",Buckling SF 5.5; rope SF 14.3,Met on paper
+R5,Setup in 10 min,9.0 min (estimate),Met on paper (estimate)
+R6,No load over 25 kg,Heaviest load 23.7 kg,Met on paper
+R7,Head change under 2 min,"One screw-pin shackle, no tools (about 1 min)",Met on paper (estimate)
+R8,Grab 10 L per cycle,10.8 L at 70% fill,Met on paper (estimate)
+R9,Sample at depth within 0.2 m,Line counter 0.1 m; tube centre known,Met on paper
+R10,DomeReach to digester floor,"Hinge 2.6 m, tool 3.3 m below rim",Met on paper (depth set as 2.5 m)
+R11,Corrosion resistance,"Galvanized steel, 6082 aluminium, A4 fasteners and rope",Not verifiable on paper; TRL 4 coupon test
+R12,"Value-engineering target USD 5,000","USD 2,838","Under the target by USD 2,162"
+R13,Every head passes a 560 mm opening,Largest diagonal 525 mm,Met on paper
+R14,Stable with the rope 10 deg off vertical,Tips at 25 deg at SWL,Met on paper
