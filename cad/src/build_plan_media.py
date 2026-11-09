@@ -19,23 +19,81 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path[:0] = [str(ROOT / ".kit"), str(ROOT / "cad" / "src")]
+import re  # noqa: E402
+
 import build_views as bv  # noqa: E402
 from build_views import Part  # noqa: E402
-from build123d import Compound, Pos, Rot  # noqa: E402
+from build123d import Box, Compound, Pos, Rot  # noqa: E402
 import model as m  # noqa: E402
 
 P = m.PARAMS
 OUT = ROOT / "docs" / "05-build-plan"
 DWG = ROOT / "cad" / "drawings"
-DATE = "2026-10-03"
+DATE = "2026-11-05"
 PROJECT = "HatchSide"
+_PARTS = None
+
+
+def allparts():
+    """The 395 parts of option A (kit 1.9 model, detail level D3)."""
+    global _PARTS
+    if _PARTS is None:
+        _PARTS = m.components("A")
+    return _PARTS
+
+
+def _has(p, *pats):
+    return any(t in p["name"] for t in pats)
+
+
+# Component groups used by the pictures: key -> (display name, selector). Fasteners and welds join their component.
+KEYS = {
+    "feet": ("Feet with clevis and chain lug", lambda p: p.get("bom") == 1 and not _has(p, "rubber pad")),
+    "pads": ("Rubber foot pads", lambda p: _has(p, "Foot rubber pad")),
+    "lower": ("Lower legs", lambda p: p.get("bom") == 2 and _has(p, "Lower leg")),
+    "lower_sleeves": ("Foot crush sleeves", lambda p: _has(p, "Foot crush sleeve")),
+    "upper": ("Upper legs", lambda p: p.get("bom") == 3 and _has(p, "Upper leg")),
+    "upper_sleeves": ("Hinge crush sleeves", lambda p: _has(p, "Hinge crush sleeve")),
+    "head": ("Tripod head with mast cheeks", lambda p: p.get("bom") == 4),
+    "sheave": ("Head sheave", lambda p: p.get("bom") == 5 and p["kind"] == "bought"),
+    "axle": ("Sheave axle bolt M20 and spacers", lambda p: p.get("bom") == 5 and p["kind"] == "fastener"),
+    "hinge_bolts": ("Leg hinge bolts M16", lambda p: p.get("bom") == 6 and _has(p, "(hinge", "Hinge nylon")),
+    "foot_bolts": ("Foot bolts M16", lambda p: p.get("bom") == 6 and _has(p, "(foot", "Foot nylon")),
+    "adj_pins": ("Leg adjust pins", lambda p: p.get("bom") == 7),
+    "chains": ("Leg-spread chains and shackles", lambda p: p.get("bom") == 8),
+    "bracket": ("Winch bracket and isolating strips", lambda p: p.get("bom") == 9 and p["kind"] != "fastener"),
+    "bracket_bolts": ("Clamp bolts M10 and stop bolt M12", lambda p: p.get("bom") == 9 and p["kind"] == "fastener"),
+    "winch": ("Hand winch", lambda p: p.get("bom") == 10),
+    "counter": ("Line length counter", lambda p: p.get("bom") == 12),
+    "rope": ("Wire rope", lambda p: p.get("bom") == 11),
+    "interface": ("Head interface: shackle and swivel", lambda p: p.get("bom") == 13),
+    "snatch": ("Snatch block and working line", lambda p: p.get("bom") == 14 and not _has(p, "cleat")),
+    "cleat": ("Working line cleat", lambda p: p.get("bom") == 14 and _has(p, "cleat")),
+    "guard": ("Rim guard panels", lambda p: p.get("bom") == 15 and not _has(p, "splash board", "Pop rivet")),
+    "boards": ("Rim guard splash boards", lambda p: p.get("bom") == 15 and _has(p, "splash board", "Pop rivet")),
+    "guard_pins": ("Rim guard drop pins", lambda p: p.get("bom") == 16),
+    "grab_shells": ("Grab shells", lambda p: p.get("bom") == 17 and _has(p, "Grab left", "Grab right")),
+    "grab_yoke": ("Grab closing yoke and hinge pin", lambda p: p.get("bom") == 17 and _has(p, "closing yoke", "Weld, yoke", "hinge pin")),
+    "grab_frame": ("Grab head beam, tag rods and pins", lambda p: p.get("bom") == 17 and not _has(p, "Grab left", "Grab right", "closing yoke", "Weld, yoke", "hinge pin")),
+}
+
+
+class _Comp:
+    def __init__(self, key, ps):
+        self.key, self.name = key, KEYS[key][0]
+        self.shape = Compound(children=[p["shape"] for p in ps])
+        self.color = ps[0]["color"]
+        self.bom = None
+        self.explode = ps[0].get("explode", (0, 0, 0))
+
+
 _C = None
 
 
 def comps():
     global _C
     if _C is None:
-        _C = {c.key: c for c in m.components(heads=False)}
+        _C = {k: _Comp(k, [p for p in allparts() if sel(p)]) for k, (_, sel) in KEYS.items()}
     return _C
 
 
@@ -46,7 +104,8 @@ def part(key, name=None, explode=None, color=None):
 
 def window(parts, lo, hi):
     """Keep only what lies inside the box lo..hi (zoom for a joint close-up)."""
-    cutter = m.box(lo[0], hi[0], lo[1], hi[1], lo[2], hi[2])
+    size = [h - l for l, h in zip(lo, hi)]
+    cutter = Pos(*[(l + h) / 2 for l, h in zip(lo, hi)]) * Box(*size)
     out = []
     for p in parts:
         kept = []
@@ -75,6 +134,43 @@ def leg_dir_xy(phi, d):
     return (d * G["sin"] * math.cos(a), d * G["sin"] * math.sin(a), -d * G["cos"])
 
 
+def _letter(p, L):
+    return re.search(r"(?<![A-Za-z0-9])" + L + r"(?![A-Za-z0-9])", p["name"]) is not None
+
+
+def leg_local(shapes, phi):
+    """Shapes of one leg moved into its own frame (hinge pin at the origin, leg running down -Z, +Y outward)."""
+    return m.leg_frame(phi, P).inverse() * Compound(children=list(shapes))
+
+
+def head_local(bom, name):
+    """A tool head's parts in its builder frame (tab hole at the origin, hanging down -Z)."""
+    ps = [p["shape"] for p in allparts() if p.get("bom") == bom]
+    return m.head_location(name).inverse() * Compound(children=ps)
+
+
+def grab_g():
+    ps = [p for p in allparts() if p.get("bom") == 17]
+
+    def g(*pats):
+        return Compound(children=[p["shape"] for p in ps if _has(p, *pats)])
+    return dict(shell_left=g("Grab left"), shell_right=g("Grab right"), yoke=g("closing yoke", "Weld, yoke"),
+                hinge_pin=g("Grab hinge pin", "R-clip, hinge pin"), tag_rods=g("tag rod"),
+                pins=g("Grab ear pin", "Grab head pin", "R-clip, ear", "R-clip, head"),
+                head_beam=g("head beam", "head tab", "beam lug", "Weld, grab tab", "Weld, beam lug"),
+                _z_h=P["HOOK_Z"] + m.build_grab(m.Asm({}), P, Pos(0, 0, 0)))
+
+
+def dome_g():
+    ps = [p for p in allparts() if p.get("bom") == 21]
+    loc = m.head_location("domereach").inverse()
+
+    def g(*pats):
+        return loc * Compound(children=[p["shape"] for p in ps if _has(p, *pats)])
+    return dict(pole=g("pole section", "spigot", "top cap", "fairlead", "end plug", "clevis collar"), tiller=g("tiller"),
+                arm=g("clevis ear", "DomeReach arm", "arm pin", "Split pin", "tool fork"), roller=g("sealant roller", "roller axle"))
+
+
 # ------------------------------------------------------------------ overview
 def overview():
     C = comps()
@@ -94,11 +190,9 @@ def overview():
              ("grab", "Grab head", ("grab_shells", "grab_yoke", "grab_frame"), (0, 0, -150))]
     ps = [Part(n, Compound(children=[C[k].shape for k in ks]), C[ks[0]].color, None, e) for _, n, ks, e in order]
     # the four other heads, beside the tripod
-    for key, name in (("sampler", "Sampler head"), ("rake", "Rake head"), ("retrieval", "Retrieval head"),
-                      ("domereach", "DomeReach head")):
-        cs = [c for c in m.components(heads=True) if c.key.startswith(key[:4]) or (key == "domereach" and c.key.startswith("dr_"))
-              or (key == "retrieval" and c.key == "connector")]
-        ps.append(Part(name, Compound(children=[c.shape for c in cs]), cs[0].color, None, (0, 0, 0)))
+    for bom, name in ((18, "Sampler head"), (19, "Rake head"), (20, "Retrieval head"), (21, "DomeReach head")):
+        cs = [p for p in allparts() if p.get("bom") == bom]
+        ps.append(Part(name, Compound(children=[p["shape"] for p in cs]), cs[0]["color"], None, (0, 0, 0)))
     return bv.overview(ps, OUT / "overview.png", f"{PROJECT}: every component in build order",
                        subtitle="Pulled apart and numbered in build order; the four other heads stand beside the tripod",
                        key=True, size=(11, 7.5))
@@ -112,15 +206,15 @@ def neighbours(*keys):
 
 def sheet(no):
     C = comps()
-    fa = m.foot()[0]
-    up = m.upper_leg(P, True)
-    lo = m.lower_leg(P, True)
-    gp = m.guard_panel(P)
-    gr = m.grab_parts(P)
+    foot_a = Compound(children=[p["shape"] for p in allparts() if p.get("bom") == 1 and _letter(p, "A")])
+    up = leg_local([p["shape"] for p in allparts() if p.get("bom") == 3 and _letter(p, "A")], AZ[0])
+    lo = leg_local([p["shape"] for p in allparts() if p.get("bom") == 2 and _letter(p, "B")], AZ[1])
+    gp = Compound(children=[p["shape"] for p in allparts() if p.get("bom") == 15 and _has(p, "panel 1")])
+    gr = grab_g()
     flat = Rot(0, 90, 0)      # a leg drawn lying along X
     specs = {
         101: dict(key="feet", title="Foot with clevis and chain lug: making sketch",
-                  shape=Compound(children=[fa, m.foot()[1]]), view=Pos(0, -P["R_FOOT"], 0) * Compound(children=[fa, m.foot()[1]]),
+                  view=foot_a,
                   nb=("lower", "chains", "pads"),
                   material="8 mm S275 plate, hot-dip galvanized; 10 mm rubber pad",
                   notes=["Base plate 140 x 280 x 8; rubber pad the same size bonded under",
@@ -173,7 +267,7 @@ def sheet(no):
                          "Jig the lugs with three 52 mm spacers and a 16 mm rod",
                          "Fillet welds 6 mm both sides; competent welder; then galvanize"]),
         105: dict(key="bracket", title="Winch bracket and clamp plate: making sketch",
-                  view=m.bracket(P)[0], nb=("upper", "winch", "bracket_bolts"),
+                  view=comps()["bracket"].shape, nb=("upper", "winch", "bracket_bolts"),
                   material="8 mm S275 plate, hot-dip galvanized; A4 bolts",
                   notes=["Two plates 120 x 270 x 8, front and back of leg A",
                          "Four 11 mm holes 42 each side of the centre line,",
@@ -184,7 +278,7 @@ def sheet(no):
                          "Clamp bolts M10 x 90 A4 with nylocks; snug, not crushing",
                          "Fits: winch base bolts flat to the front plate, drum across",
                          "the leg, crank to the right as you face the leg"]),
-        106: dict(key="guard", title="Rim guard panel: making sketch", view=Pos(0, -P["GUARD_R"], 0) * Compound(children=[gp[0], gp[1]]),
+        106: dict(key="guard", title="Rim guard panel: making sketch", view=gp,
                   nb=("guard_pins", "boards", "grab_shells"),
                   material="25 x 25 x 2 mm aluminium tube; 6 mm HDPE board",
                   notes=["Frame 746 long x 400 high from 25 x 25 x 2 tube, mitred or",
@@ -225,7 +319,7 @@ def sheet(no):
                          "Fits: rods pin to the shell ears and the beam lugs; yoke",
                          "rides on the hinge pin outside the shells"]),
         109: dict(key="grab_frame", title="Sampler head: making sketch",
-                  view=Compound(children=list(m.sampler(P).values())), nb=(),
+                  view=head_local(18, "sampler"), nb=(),
                   material="Clear PVC tube; stainless rod and plate; steel ballast",
                   notes=["Tube 75 OD x 3 wall x 600 clear PVC, ends square",
                          "Cage: four 10 mm stainless rods 694 long on a 120 circle,",
@@ -237,7 +331,7 @@ def sheet(no):
                          "  by elastic cord through the tube; latch on the top plate",
                          "Set: caps latched open; trip: a jerk on the working line",
                          "Sample 2.2 L; its centre 420 below the shackle pin"]),
-        110: dict(key="grab_frame", title="Rake head: making sketch", view=m.rake(P), nb=(),
+        110: dict(key="grab_frame", title="Rake head: making sketch", view=head_local(19, "rake"), nb=(),
                   material="S275 flat bar and round bar; hot-dip galvanized",
                   notes=["Tine bar 400 x 50 x 12 with a 16 hole in the middle",
                          "Nine 12 mm tines 250 long at 45 pitch, welded into",
@@ -249,7 +343,7 @@ def sheet(no):
                          "Use: lower on the rope, pull the working line on the drag",
                          "eye to draw the tines through scum, lift, repeat"]),
         111: dict(key="grab_frame", title="Retrieval head: making sketch",
-                  view=Compound(children=list(m.retrieval(P).values())), nb=(),
+                  view=head_local(20, "retrieval"), nb=(),
                   material="S275 plate and sheet; EN 362 connector (bought)",
                   notes=["Top disc 300 x 6 with a 100 hole and the standard tab",
                          "Funnel rolled from 2.5 sheet: 300 at the top to 120 at",
@@ -261,7 +355,7 @@ def sheet(no):
                          "ring of a line already on the casualty's harness",
                          "The haul is made with certified rescue equipment only"]),
         112: dict(key="grab_frame", title="DomeReach head: making sketch",
-                  view=Compound(children=list(m.domereach(P).values())), nb=(),
+                  view=head_local(21, "domereach"), nb=(),
                   material="6082-T6 aluminium tube; A4 pins; bought roller and tools",
                   notes=["Pole: two 50 x 3 tubes 1,500 long joined by a 160 sleeve",
                          "  and a 10 mm pin; top cap with the standard tab",
@@ -277,9 +371,7 @@ def sheet(no):
     sp = specs[no]
     pc = C[sp["key"]]
     if no >= 109:
-        local = {109: Compound(children=list(m.sampler(P).values())), 110: m.rake(P),
-                 111: Compound(children=list(m.retrieval(P).values())), 112: Compound(children=list(m.domereach(P).values()))}[no]
-        me = Part("this head", local, "#0F766E")
+        me = Part("this head", sp["view"], "#0F766E")
         nbs = []
     else:
         me = Part(pc.name, pc.shape, pc.color)
@@ -336,7 +428,7 @@ def joints(n):
                         "Rope eye, swivel and screw-pin shackle through the 20 mm hole in every head's 10 mm tab",
                         azim=-60)
     if n in (7, 8):
-        gr = m.grab_parts(P)
+        gr = grab_g()
         zh = gr["_z_h"]
         ps = [Part("Grab shell, left", gr["shell_left"], "#0E7490"), Part("Grab shell, right", gr["shell_right"], "#22D3EE"),
               Part("Closing yoke", gr["yoke"], "#C2410C"), Part("Hinge pin 25 mm", gr["hinge_pin"], "#111827"),
@@ -346,7 +438,7 @@ def joints(n):
             return bv.joint(window(ps, (-120, -200, zh - 90), (120, 200, zh + 90)), OUT / "joint-07.png",
                             "Joint 7: grab hinge", "Shell end plates interleave on the 25 mm pin; the yoke bars ride outside",
                             cut="+X", azim=-35)
-        return bv.joint(window(ps, (-200, -200, -130), (200, 200, 40)), OUT / "joint-08.png",
+        return bv.joint(window(ps, (-200, -200, 940), (200, 200, 1140)), OUT / "joint-08.png",
                         "Joint 8: tag rods to the head beam", "Each rod pinned inside a lug under the 10 mm beam",
                         azim=-35)
     if n == 9:
@@ -358,7 +450,7 @@ def joints(n):
                         "Joint 9: rim guard corner", "Four rings from two panels interleave on one 12 mm drop pin",
                         azim=-60)
     if n == 10:
-        d = m.domereach(P)
+        d = dome_g()
         zb = -30 - 2 * P["DR_POLE"][2]
         ps = [Part("Pole", d["pole"], "#6D28D9"), Part("Arm, clevis and fork", d["arm"], "#A78BFA"),
               Part("Sealant roller", d["roller"], "#9CA3AF")]
@@ -414,7 +506,7 @@ def step(n):
 
 def local_step(n):
     if n in (11, 12):
-        gr = m.grab_parts(P)
+        gr = grab_g()
         sl = Part("Grab shell, left", gr["shell_left"], "#0E7490", None, (-250, 0, 0))
         sr = Part("Grab shell, right", gr["shell_right"], "#22D3EE", None, (250, 0, 0))
         yk = Part("Closing yoke", gr["yoke"], "#C2410C", None, (0, 0, 250))
@@ -429,7 +521,7 @@ def local_step(n):
         return bv.step([sl, sr, yk, hp], [tr, hb, pn], OUT / "step-12.png", "Step 12: fit the tag rods and the head beam",
                        "Rods on the ear pins, then the beam lugs over the rods' top ends; R-clips on every pin",
                        azim=-35, label_done=False)
-    d = m.domereach(P)
+    d = dome_g()
     po = Part("Pole sections, cap and tiller", Compound(children=[d["pole"], d["tiller"]]), "#6D28D9")
     ar = Part("Arm and clevis", d["arm"], "#A78BFA", None, (250, 0, -200))
     ro = Part("Sealant roller", d["roller"], "#9CA3AF", None, (250, 0, 150))

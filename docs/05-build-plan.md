@@ -62,12 +62,12 @@ Make and check each component before the assembly step that needs it. Sizes are 
 
 **How to make it.**
 
-1. Cut a base plate 140 x 280 mm, two clevis plates 100 long x 80 high, and a chain lug 100 x 45 mm, all from 8 mm plate.
+1. Cut a base plate 140 x 360 mm, two clevis plates 100 long x 80 high, and a chain lug 44 x 45 mm, all from 8 mm plate.
 2. Drill a 17 mm hole through both clevis plates together, 70 mm above the ground when they stand on the base (62 mm above the base's top face), centred along their length.
-3. Drill a 14 mm hole in the chain lug, 20 mm from its outer end, so its centre ends up 140 mm beyond the clevis centre, toward the outer end of the foot.
-4. Clamp a 52 mm spacer block between the clevis plates and stand them on the base, centred both ways, along the 280 mm direction. Weld both sides with 5 mm fillets.
-5. Weld the chain lug on the centre line at the outer end of the base, overhanging the end by 20 mm, 5 mm fillets both sides.
-6. Galvanize. Then bond a 140 x 280 x 10 mm rubber pad under the base with contact adhesive.
+3. Drill a 14 mm hole in the chain lug, 14 mm from its inner end, so its centre ends up 140 mm beyond the clevis centre, toward the outer end of the foot.
+4. Clamp a 52 mm spacer block between the clevis plates and stand them on the base, centred both ways, along the 360 mm direction. Weld both sides with 5 mm fillets.
+5. Weld the chain lug on the centre line of the base, its inner end 126 mm beyond the clevis centre, 5 mm fillets both sides; the lug stands wholly on the base, so the shackle bow clears the plate.
+6. Galvanize. Then bond a 140 x 360 x 10 mm rubber pad under the base with contact adhesive.
 
 **How it fits the parts next to it.** The lower leg sits between the clevis plates on an M16 bolt through its steel sleeve, with 1 mm clearance each side (Figure 16). The leg-spread chains shackle to the lug; the lug is far enough out that each chain passes 12 mm clear of the clevis plates.
 
@@ -298,9 +298,9 @@ Make and check each component before the assembly step that needs it. Sizes are 
 Buy to specification, not brand. Line numbers are those of the bill of materials.
 
 - **Head sheave and axle (line 5).** Wire rope sheave 150 mm outside, 125 mm at the rope, for 6 mm rope, sealed ball bearing on a 20 mm bore, rated at least 500 kg; M20 x 70 A4 bolt, nyloc nut and two 3 mm spacer washers.
-- **Hinge and foot bolts (line 6).** Six M16 x 100 A4-70 bolts with nyloc nuts, washers and nylon isolating washers.
+- **Hinge and foot bolts (line 6).** Six M16 x 110 A4-70 bolts with nyloc nuts, washers and nylon isolating washers.
 - **Adjust pins (line 7).** Three 12 mm stainless ball-lock pins, 70 mm grip, with lanyards.
-- **Leg-spread chains (line 8).** Three 2.78 m lengths of 6 mm galvanized chain, grade 30 or better, each with two 8 mm screw-pin shackles.
+- **Leg-spread chains (line 8).** Three 2.78 m lengths of 6 mm galvanized chain, grade 30 or better, with three 8 mm screw-pin shackles in all, one at each foot lug joining the ends of two chains.
 - **Hand winch (line 10).** Two-speed hand winch with an automatic (Weston-type) load brake, rated at least 450 kg on the first layer, drum for at least 15 m of 6 mm rope, galvanized or zinc plated, four-bolt base, 250 mm crank. A material winch, marked as not for lifting people.
 - **Wire rope (line 11).** 15 m of 6 mm 7x19 grade 316 stainless rope, minimum breaking load at least 21 kN, with a swaged thimble eye made by the supplier.
 - **Line counter (line 12).** Mechanical rope length counter for 6 mm rope, 0.1 m resolution, resettable.
@@ -471,7 +471,7 @@ Join the pole sections at the sleeve and pin; arm on the clevis pin; roller on t
 
 ## 5. First checks
 
-These are the checks a TRL 4 test report would record; this plan only lists them. Requirement numbers are those of HTS-REQ-001.
+These are the checks a TRL 4 test report would record; this plan only lists them. Requirement numbers are those of HTS-PRS-001.
 
 *Table 2. First checks.*
 
@@ -521,4 +521,4 @@ Stop at each point. Carry on only when everything listed is true.
 - Calculations: `docs/04-calcs/01-sizing.md` (HTS-CAL-001) and `docs/04-calcs/sizing.py`.
 - Bill of materials: `bom/bom.csv`.
 - Decisions: `docs/decisions/0002-design-for-construction.md` (HTS-DDR-002), with HTS-DDR-001.
-- Requirements: `docs/03-requirements.md` (HTS-REQ-001).
+- Requirements: `docs/03-requirements.md` (HTS-PRS-001).

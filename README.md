@@ -56,7 +56,15 @@ Full problem statement: [docs/01-problem.md](docs/01-problem.md)
 
 A portable tripod with a hand winch and interchangeable tool heads (grab, sampler, rake, retrieval head and the DomeReach biogas head) set up over a manhole or tank hatch; the crew lowers and works each head from outside, so nobody enters the space.
 
-Full design precis: [docs/02-concept.md](docs/02-concept.md) · Requirements: [docs/03-requirements.md](docs/03-requirements.md) · Calculations: [docs/04-calcs/01-sizing.md](docs/04-calcs/01-sizing.md) · Prototype build plan: [docs/05-build-plan.md](docs/05-build-plan.md) · Design decisions: [docs/06-design-decisions.md](docs/06-design-decisions.md) · General arrangement: [cad/drawings/HTS-DWG-001.pdf](cad/drawings/HTS-DWG-001.pdf) · 3D viewer: [media/viewer.html](media/viewer.html)
+Full design precis: [docs/02-concept.md](docs/02-concept.md) · STEM check: [docs/01b-stem-check.md](docs/01b-stem-check.md) · Concept options: [docs/02a-concept-options.md](docs/02a-concept-options.md) · User requirements: [docs/03a-user-requirements.md](docs/03a-user-requirements.md) · Requirements: [docs/03-requirements.md](docs/03-requirements.md) · Traceability: [docs/03b-traceability.md](docs/03b-traceability.md) · Calculations: [docs/04-calcs/01-sizing.md](docs/04-calcs/01-sizing.md) · Prototype build plan: [docs/05-build-plan.md](docs/05-build-plan.md) · Design decisions: [docs/06-design-decisions.md](docs/06-design-decisions.md) · General arrangement: [cad/drawings/HTS-DWG-001.pdf](cad/drawings/HTS-DWG-001.pdf) · 3D viewer: [media/viewer.html](media/viewer.html)
+
+## Concept options
+
+Two options with different working principles are modelled to the same detail (CAD fidelity D3) and scored against the user requirements ([docs/02a-concept-options.md](docs/02a-concept-options.md)). Option A, the tripod and hand winch, carries the load in leg compression; option B, a straddle-frame davit, carries it in a bolted mast and cantilever boom. A scores 160 of 180 and B 138, so A leads by 14 %, outside the 10 % band; **the choice is proposed, awaiting Amish** ([HTS-DDR-003](docs/decisions/0003-concept-selection.md)). B is more stable (it tips at 46 degrees against 25) but needs a clear 1.8 by 2.3 m area, takes longer to set up and has a 26 kg side rail.
+
+## STEM check
+
+Every physical claim was checked against known science before the design was trusted ([docs/01b-stem-check.md](docs/01b-stem-check.md)): 16 of 24 sit within known science and 8 are plausible and open to a supplier figure or a TRL 4 measurement; none fails. An independent review found that the grab nets 9.7 L after the drip against the 10 L target (PR-008 is at risk), that the winch at stall loads the rope to a factor of 4.8, and that the leg-spread chain tension was overstated; all three are recorded and the first two are proposals for Amish ([docs/06-design-decisions.md](docs/06-design-decisions.md), D16 and D17).
 
 ## Key components
 
@@ -99,7 +107,7 @@ The [prototype build plan](docs/05-build-plan.md) shows how to make each compone
 
 | Folder | Contents |
 | --- | --- |
-| `docs/` | Problem, concept, requirements, calculations and design decisions |
+| `docs/` | Problem, STEM check, concept and options, requirements and traceability, calculations, regulatory, feasibility, risk, market, plan and design decisions |
 | `cad/src/` | build123d Python source, the source of truth for all geometry |
 | `cad/step/`, `cad/stl/` | Exported models for FreeCAD, other CAD tools and printing |
 | `cad/drawings/` | 2D sketches and dimensioned drawings |

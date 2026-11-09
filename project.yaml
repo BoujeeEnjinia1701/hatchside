@@ -5,9 +5,34 @@ repo: BoujeeEnjinia1701/hatchside         # GitHub repository, shown on every dr
 area: Situational field hardware
 trl: 3                   # Technology Readiness Level, see .kit/STANDARDS.md section 9
 trl_target: 3
+stage: P3                # pipeline stage, STANDARDS section 19; kit 1.9.1 upgrade 2026-11-05
+stem_check: open         # HTS-STM-001 v0.2: 16 within, 8 plausible, none fails; S9 (grab nets 9.7 L) and S12 open
+concept_options: [A, B]  # HTS-OPT-001
+concept_chosen: "proposed: A, awaiting Amish"   # HTS-DDR-003; nothing decided
 design_state: constructable   # STANDARDS section 18; made constructable 2026-10-03 (HTS-DDR-002)
 trl_evidence:
   - docs/01-problem.md
+  - docs/01b-stem-check.md
+  - docs/02a-concept-options.md
+  - docs/03a-user-requirements.md
+  - docs/03b-traceability.md
+  - docs/07-regulatory.md
+  - docs/08-feasibility.md
+  - docs/09-risk.md
+  - docs/10-market.md
+  - docs/11-plan.md
+  - docs/decisions/0003-concept-selection.md
+  - docs/decisions/0004-kit-1-9-model-corrections.md
+  - docs/04-calcs/stem_check.py
+  - docs/04-calcs/stem_results.csv
+  - docs/04-calcs/results.csv
+  - cad/fidelity.json
+  - cad/src/product_model.py
+  - cad/src/slim_step.py
+  - cad/src/export_stl.py
+  - cad/step/A-assembly.step
+  - cad/step/B-assembly.step
+  - cad/stl/hatchside-assembly.stl
   - docs/02-concept.md
   - docs/03-requirements.md
   - docs/decisions/0001-trl2-review-decisions.md
@@ -15,7 +40,6 @@ trl_evidence:
   - docs/04-calcs/01-sizing.md
   - docs/04-calcs/sizing.py
   - cad/src/model.py
-  - cad/step/hatchside-assembly.step
   - cad/drawings/HTS-DWG-001.svg
   - cad/drawings/HTS-DWG-001.pdf
   - bom/bom.csv

@@ -1,0 +1,35 @@
+{
+ "level": "D3",
+ "stage": "P3",
+ "hash": "4267ab066ab5624d",
+ "options": {
+  "A": {
+   "title": "Tripod and hand winch",
+   "parts": 395,
+   "made_or_bought": 204,
+   "fasteners": 127,
+   "welds": 64,
+   "bare": [],
+   "bare_share": 0.0,
+   "interference": [],
+   "mass_kg": 197.7,
+   "step_files": 204
+  },
+  "B": {
+   "title": "Straddle-frame davit",
+   "parts": 480,
+   "made_or_bought": 180,
+   "fasteners": 233,
+   "welds": 67,
+   "bare": [],
+   "bare_share": 0.0,
+   "interference": [],
+   "mass_kg": 347.9,
+   "step_files": 0
+  }
+ },
+ "failures": [],
+ "warnings": [],
+ "passed": true,
+ "seconds": 609.4
+}

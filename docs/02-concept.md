@@ -94,7 +94,7 @@ From HTS-CAL-001 (estimates; nothing measured).
 | Leg force, winch leg, at 150 kg x 1.5 x 1.25 | 3.85 kN | Rope runs along leg A |
 | Leg buckling margin | 5.5 | Whole leg as the 50 x 3 mm section |
 | Rope safety factor at 150 kg | 14.3 | 21 kN minimum breaking load |
-| Tipping angle of the rope at 150 kg | 25 degrees | 71.4 kg tripod, 750 mm to the tipping edge |
+| Tipping angle of the rope at 150 kg | 25 degrees | 74.7 kg tripod, 750 mm to the tipping edge |
 | Crank force at 150 kg, low gear | 31 N | 10:1, 250 mm crank, 75 % efficiency |
 | Grab payload per cycle | 10.8 L (19 kg) | 70 % fill, 1.8 kg/L |
 | Silt removed per hour at 3 m | About 166 L | 3.9 minutes a cycle |

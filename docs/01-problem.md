@@ -3,9 +3,9 @@ doc_id: HTS-PRB-001
 title: HatchSide problem statement
 project: HatchSide
 doc_type: Problem statement
-version: "0.3"
+version: "0.4"
 status: Draft
-date: '2026-10-03'
+date: '2026-11-05'
 author: Amish Chadha
 license: CERN-OHL-S-2.0
 revisions:
@@ -21,6 +21,10 @@ revisions:
   date: '2026-10-03'
   author: Amish Chadha
   change: TRL 3; safety section added; first candidate partners recorded
+- version: "0.4"
+  date: '2026-11-05'
+  author: Amish Chadha
+  change: Kit 1.9.1 upgrade (stage P3); users-and-needs and stakeholder tables added (feed HTS-URS-001)
 ---
 
 # HatchSide problem statement
@@ -35,12 +39,31 @@ Existing tools cover parts of the job. The Bandicoot robot cleans manholes with 
 
 ## Users and context
 
-| User | Need | Context |
+Table 1. Users and needs (desk research, to confirm with co-design partners; the needs feed HTS-URS-001).
+
+| User type | Goals and needs | Typical use scenario | Pain points and challenges |
+| --- | --- | --- | --- |
+| Sanitation and septic tank workers | Clear a blockage, take a sample or recover a dropped item without going down; kit they can carry on foot or by handcart | A crew of two or three at a street manhole or household septic tank, often informal work with little or no safety gear | No gas detection or rescue gear; cost of any kit; heavy loads on narrow lanes; tools that need training |
+| Municipal and utility crews | Fast set-up on routine desilting and inspection; one kit for several jobs; kit that survives daily use | Sewer network, pump station and drain rounds from a truck, several sites a day | Traffic at the opening; short job windows; maintenance by their own workshop |
+| Farm families and biogas technicians | Service and reseal a household fixed-dome digester from the opening, without entering a dome that holds methane and hydrogen sulfide | A technician with one helper at a 0.5 to 0.6 m dome opening, on foot or by motorbike | Small opening; digester up to about 2.5 m deep; no workshop; very low budget |
+| Oil, gas and industrial tank contractors | Sample and loosen residues from the hatch before any entry decision | A crew at a storage tank roof hatch or frac tank, with permits and gas monitors already in place | Flammable atmospheres; hatch height above ground; rules on equipment used at the hatch |
+| Safety and rescue teams (secondary) | A way to clip a line to a casualty from the rim without entering, with the haul made on certified rescue gear | A standby team at a permit-required space with its own rescue equipment | Time; kit that must not be mistaken for certified rescue equipment |
+
+## Stakeholders
+
+Table 2. Stakeholders.
+
+| Stakeholder group | Role or interest | Engagement needed |
 | --- | --- | --- |
-| Sanitation and septic tank workers | Clear, sample and retrieve without going in | Street manholes and household tanks, often informal work with no gear |
-| Municipal and utility crews | A portable, fast-setup kit for routine desilting and inspection | Sewer networks, pump stations and drains |
-| Farm families and biogas technicians | Service and reseal a household digester from the opening | Rural fixed-dome digesters |
-| Oil, gas and industrial tank contractors | Sample and loosen residues before any entry decision | Frac tanks, storage tanks and tankers |
+| Sanitation workers and their organisations | Users and the people most at risk; they decide whether the kit is used | Co-design partner (none agreed; HTS-DDR-001, D11); walk through each head at a mock opening |
+| Municipal sewer and sanitation departments | Buyers and operators of routine crews; responsible under the 2013 Indian act and the mechanised sanitation programme | Candidate partner (none agreed); confirm opening sizes, depths and routines |
+| Household biogas programmes and technicians | Users of DomeReach; programme funders | Candidate partner (none agreed); confirm digester openings and sealant practice |
+| Industrial tank operators and contractors | Users under permit-required confined space rules | Review of the retrieval head and equipment rules before any use claim |
+| Regulators and standards bodies (labour, machinery, traffic) | Set the rules the kit must not be mistaken for breaking (lifting equipment, personnel rescue, confined space entry) | Read HTS-REG-001; ask a regulator or notified body before any sale or claim |
+| Local fabricators and galvanizers | Make and mend the kit; they decide whether it can be built locally | Review the drawings and the build plan (BLD-001) for buildability |
+| Traffic and public at the opening | Bystanders and passing vehicles at street manholes | Rim guard, cones and barrier chain; local work-zone rules to assess |
+| Amish Chadha (Design Molecule) | Owner; decides scope, budget and release | Decisions listed in HTS-DEC-001 and docs/REVIEW.md |
+| Funders and open hardware community | Fund trials; reuse and improve the design | Open licence (CERN-OHL-S-2.0); public repository after Amish's release decision |
 
 ## Operating environment
 

@@ -1,4 +1,4 @@
-"""HatchSide general arrangement drawing HTS-DWG-001 (Rev P2).
+"""HatchSide general arrangement drawing HTS-DWG-001 (Rev P3).
 
 Run from the repo root:  python cad/src/sheets.py
 Builds cad/drawings/HTS-DWG-001.svg, .pdf and .png from the parametric model (cad/src/model.py):
@@ -12,9 +12,26 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path[:0] = [str(ROOT / ".kit"), str(ROOT / "cad/src"), str(ROOT / "docs/04-calcs")]
-from build123d import Compound  # noqa: E402
+from build123d import Compound, Rot  # noqa: E402
 from drawing import Sheet, project_views  # noqa: E402
 import model as m  # noqa: E402
+import build123d.exporters as _bx  # noqa: E402
+
+# A tilted full circle becomes a nearly closed ellipse arc that the SVG exporter cannot write (start equals end); draw it as a polyline.
+_orig_ell = _bx.ExportSVG._ellipse_segments
+
+
+def _safe_ell(self, edge, reverse):
+    try:
+        return _orig_ell(self, edge, reverse)
+    except AssertionError:
+        pts = [self._path_point(edge.position_at(k / 24)) for k in range(25)]
+        if reverse:
+            pts = pts[::-1]
+        return [_bx.PT.Line(a, b) for a, b in zip(pts, pts[1:])]
+
+
+_bx.ExportSVG._ellipse_segments = _safe_ell
 import sizing  # noqa: E402
 
 P = m.PARAMS
@@ -23,15 +40,22 @@ s = sizing.structure()
 _, loads, tripod = sizing.masses()
 tp = sizing.tipping(tripod)
 
-asm = Compound(children=[c.shape for c in m.components(heads=False)])
+# The kit 1.9 model has every bolt, weld and head. The general arrangement draws the made and bought parts of the
+# tripod, winch, rope, rim guard and the grab on the rope (BOM lines 1 to 17); fasteners and weld beads are left off.
+GA_LINES = set(range(1, 18))
+# The view is tilted 0.03 degrees off the principal axes (0.006 gave an empty front view): the hidden-line projection of exactly axis-aligned tube and plate faces can stall.
+asm = Compound(children=[Rot(0.03, 0.03, 0.03) * p["shape"] for p in m.components("A")
+                         if p["kind"] in ("made", "bought") and p.get("bom") in GA_LINES
+                         and not p["name"].startswith(("Spare", "Head interface gauge"))])
 work = ROOT / "cad/drawings/_views"
 views = project_views(asm, work)
 
 sh = Sheet(project="HatchSide", title="No-entry tripod over a hatch: general arrangement", dwg_no="HTS-DWG-001",
-           rev="P2", author="Amish Chadha", date="2026-10-03", concept=True, scale=None,
+           rev="P3", author="Amish Chadha", date="2026-11-05", concept=True, scale=None,
            material="Legs 6082-T6 Al tube; head, feet, bracket S275 galvanized; A4 fasteners. See bom/bom.csv",
            revisions=[("P1", "Preliminary GA from the TRL 3 model (HTS-CAL-001)", "2026-10-03", "AC"),
-                      ("P2", "Design for construction (HTS-DDR-002)", "2026-10-03", "AC")])
+                      ("P2", "Design for construction (HTS-DDR-002)", "2026-10-03", "AC"),
+                      ("P3", "Redrawn from the kit 1.9 detailed model (HTS-DDR-004)", "2026-11-05", "AC")])
 sh.add_ortho(views, ["front", "top", "right"])
 sh.add_svg(views["iso"], 276, 37, 140, 80, label="Isometric view", sublabel="Not to scale; grab on the rope")
 sh.add_notes("Key dimensions (mm) and data", [
